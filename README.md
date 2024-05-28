@@ -37,4 +37,5 @@ E.g.
 ## TODOs of project
 
 -   Add support for other reserach pages on arxiv
+-   Add testing suite to prevent future breakage if change in website html
 -   Add in an AI agent from huggingface that can summarise a paper
