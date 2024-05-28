@@ -9,6 +9,19 @@ import pathlib
 BASE_URL = "https://arxiv.org"
 REQUEST_TIMEOUT = 2
 
+# ANSI escape codes for colors
+class Color:
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
+
 @dataclass
 class Paper:
 	title: str = ""
@@ -24,10 +37,10 @@ class Paper:
 				f"\n"
 				f"--------------------------------------------------"
 				f"\n"
-				f"Title: {self.title}\n"
-				f"Authors: {self.authors}\n"
-				f"PDF Link: {self.pdf_link}\n"
-				f"Abstract:\n \t{self.abstract}\n"
+				f"{Color.RED}Title{Color.RED}:{Color.END} {self.title}\n"
+				f"{Color.CYAN}Authors{Color.CYAN}:{Color.END} {self.authors}\n"
+				f"{Color.PURPLE}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
+				f"{Color.GREEN}Abstract:{Color.GREEN}\n \t{Color.END}{self.abstract}\n"
 				# f"subjects: {', '.join(self.subjects)}"
 				f"\n"
 				f"\n"
@@ -39,9 +52,9 @@ class Paper:
 				f"\n"
 				f"--------------------------------------------------"
 				f"\n"
-				f"Title: {self.title}\n"
-				f"Authors: {self.authors}\n"
-				f"PDF Link: {self.pdf_link}\n"
+				f"{Color.RED}Title{Color.RED}:{Color.END} {self.title}\n"
+				f"{Color.CYAN}Authors{Color.CYAN}:{Color.END} {self.authors}\n"
+				f"{Color.PURPLE}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
 				f"subjects: {', '.join(self.subjects)}"
 				f"\n"
 				f"--------------------------------------------------"
