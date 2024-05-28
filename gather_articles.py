@@ -29,35 +29,35 @@ class Paper:
 	pdf_link: str = ""
 	subjects: List[str] = field(default_factory=list)
 	abstract: str = ""
+	id: int = 0
 
 	def __repr__(self):
+		escape_mask = '\033]8;{};{}\033\\{}\033]8;;\033\\'
 		if len(self.abstract) != 0:
 			return (
 				f"\n"
 				f"\n"
-				f"--------------------------------------------------"
+				f"------------------------[{self.id}]------------------------"
 				f"\n"
-				f"{Color.RED}Title{Color.RED}:{Color.END} {self.title}\n"
-				f"{Color.CYAN}Authors{Color.CYAN}:{Color.END} {self.authors}\n"
-				f"{Color.PURPLE}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
-				f"{Color.GREEN}Abstract:{Color.GREEN}\n \t{Color.END}{self.abstract}\n"
-				# f"subjects: {', '.join(self.subjects)}"
+				f"{Color.RED}{Color.UNDERLINE}{Color.BOLD}Title:{Color.END} {self.title}\n"
+				f"{Color.CYAN}{Color.UNDERLINE}{Color.BOLD}Authors:{Color.END} {self.authors}\n"
+				f"{Color.YELLOW}{Color.UNDERLINE}{Color.BOLD}subjects:{Color.END} {', '.join(self.subjects)}"
+				f"{Color.PURPLE}{Color.UNDERLINE}{Color.BOLD}PDF Link:{Color.END} {self.pdf_link}\n"
+				f"{Color.GREEN}{Color.UNDERLINE}{Color.BOLD}Abstract:{Color.END}\n \t{self.abstract}\n"
+				f"------------------------[{self.id}]------------------------"
 				f"\n"
-				f"\n"
-				f"--------------------------------------------------"
 				f"\n")
 		else: 
 			return (
 				f"\n"
 				f"\n"
-				f"--------------------------------------------------"
+				f"------------------------[{self.id}]------------------------"
 				f"\n"
-				f"{Color.RED}Title{Color.RED}:{Color.END} {self.title}\n"
-				f"{Color.CYAN}Authors{Color.CYAN}:{Color.END} {self.authors}\n"
-				f"{Color.PURPLE}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
-				f"subjects: {', '.join(self.subjects)}"
-				f"\n"
-				f"--------------------------------------------------"
+				f"{Color.RED}{Color.UNDERLINE}{Color.BOLD}Title{Color.RED}:{Color.END} {self.title}\n"
+				f"{Color.CYAN}{Color.UNDERLINE}{Color.BOLD}Authors{Color.CYAN}:{Color.END} {self.authors}\n"
+				f"{Color.YELLOW}{Color.UNDERLINE}{Color.BOLD}subjects:{Color.YELLOW}{Color.END} {', '.join(self.subjects)}\n"
+				f"{Color.PURPLE}{Color.UNDERLINE}{Color.BOLD}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
+				f"------------------------[{self.id}]------------------------"
 				f"\n"
 				f"\n")
 
@@ -74,7 +74,7 @@ def request_url(url):
 		print(f"Request failed: {e}")
 		return ""
 
-def getInfo():
+def getInfo(abstract=True):
 	# TODO: add support for other links
 	url = "https://arxiv.org/list/cs.AI/recent"
 	html_content = request_url(url)
@@ -84,7 +84,7 @@ def getInfo():
 	if soup: 
 		dl_tag = soup.find('dl', id='articles')
 		if dl_tag: 
-			article_list = parse_articles(dl_tag)
+			article_list = parse_articles(dl_tag, abstract)
 		else: 
 			print("Error: Could not find dl tag with articles.")
 
@@ -106,7 +106,7 @@ def extract_abstract(abstract_link)-> str:
 
 	return abstract_text
 
-def parse_articles(dl_tag)-> List[Paper]: 
+def parse_articles(dl_tag, abstract)-> List[Paper]: 
 	# links for each article inside the <dt> header
 	# the meta information like title and authors is inside the <dd> <div class="meta"> tag
 
@@ -115,15 +115,18 @@ def parse_articles(dl_tag)-> List[Paper]:
 	dt_tags = dl_tag.find_all('dt')
 	dd_tags = dl_tag.find_all('dd')
 
+	iter = 0
 	for dt, dd in zip(dt_tags, dd_tags):
 		# links 
 		paper = Paper()
+		paper.id = iter
 		pdf_link = dt.find('a', title="Download PDF")['href'] if dt.find('a', title='Download PDF') else ''
 		paper.pdf_link = BASE_URL + pdf_link 
 
-		abstract_link = BASE_URL + dt.find('a', title='Abstract')['href']
-		if abstract_link: 
-			paper.abstract = extract_abstract(abstract_link)
+		if abstract == True:
+			abstract_link = BASE_URL + dt.find('a', title='Abstract')['href']
+			if abstract_link: 
+				paper.abstract = extract_abstract(abstract_link)
 
 		meta_div = dd.find('div', class_='meta')
 		if meta_div: 
@@ -137,12 +140,15 @@ def parse_articles(dl_tag)-> List[Paper]:
 				authors = [a.get_text(strip=True) for a in authors_div.find_all('a')]
 				paper.authors = authors
 
-			subject_span = meta_div.find('span', class_='primary_subject')
+			subject_span = meta_div.find('span', class_='primary-subject')
 			if subject_span: 
-				clean_string = lambda input_string: input_string.lstrip().split("(cs.")[0]
-				paper.subjects.append(clean_string(subject_span.get_text))
+				paper.subjects.append(subject_span.get_text(strip=True))
+				extra_subjects = subject_span.next_sibling.strip(' "')
+				extra_subjects.rstrip('\n')
+				paper.subjects.append(extra_subjects)
 
 		article_list.append(paper)
+		iter += 1
 
 	return article_list
 
