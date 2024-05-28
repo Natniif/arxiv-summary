@@ -4,7 +4,7 @@ from typing import List, Union
 from bs4 import BeautifulSoup
 import requests
 import webbrowser
-import pathlib
+import argparse
 
 BASE_URL = "https://arxiv.org"
 REQUEST_TIMEOUT = 2
@@ -74,7 +74,7 @@ def request_url(url):
 		print(f"Request failed: {e}")
 		return ""
 
-def getInfo(abstract=True):
+def getInfo(abstract=True, max_papers=25):
 	# TODO: add support for other links
 	url = "https://arxiv.org/list/cs.AI/recent"
 	html_content = request_url(url)
@@ -84,7 +84,7 @@ def getInfo(abstract=True):
 	if soup: 
 		dl_tag = soup.find('dl', id='articles')
 		if dl_tag: 
-			article_list = parse_articles(dl_tag, abstract)
+			article_list = parse_articles(dl_tag, abstract, max_papers)
 		else: 
 			print("Error: Could not find dl tag with articles.")
 
@@ -106,7 +106,7 @@ def extract_abstract(abstract_link)-> str:
 
 	return abstract_text
 
-def parse_articles(dl_tag, abstract)-> List[Paper]: 
+def parse_articles(dl_tag, abstract, max_papers)-> List[Paper]: 
 	# links for each article inside the <dt> header
 	# the meta information like title and authors is inside the <dd> <div class="meta"> tag
 
@@ -115,7 +115,7 @@ def parse_articles(dl_tag, abstract)-> List[Paper]:
 	dt_tags = dl_tag.find_all('dt')
 	dd_tags = dl_tag.find_all('dd')
 
-	iter = 0
+	iter = 1
 	for dt, dd in zip(dt_tags, dd_tags):
 		# links 
 		paper = Paper()
@@ -148,12 +148,20 @@ def parse_articles(dl_tag, abstract)-> List[Paper]:
 				paper.subjects.append(extra_subjects)
 
 		article_list.append(paper)
+
+		if iter == max_papers: 
+			break
+
 		iter += 1
 
 	return article_list
 
 if __name__ == "__main__": 
 	# TODO add parsing information to display certain parts and load articles in web page potentially
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--abstract", "-a", type=bool, help="Display the abstract. Default = True", default=True, required=False)
+	parser.add_argument("--num", "-n", type=int, help="Choose how many papers to display", default=25, required=False)
 
-	getInfo()
+	args = parser.parse_args()
+	getInfo(args.abstract, args.num)
 	pass
