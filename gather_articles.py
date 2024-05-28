@@ -6,7 +6,8 @@ import requests
 import webbrowser
 import pathlib
 
-BASE_URL = "https://arxiv.org/"
+BASE_URL = "https://arxiv.org"
+REQUEST_TIMEOUT = 2
 
 @dataclass
 class Paper:
@@ -20,32 +21,50 @@ class Paper:
 		if len(self.abstract) != 0:
 			return (
 				f"\n"
+				f"\n"
+				f"--------------------------------------------------"
+				f"\n"
 				f"Title: {self.title}\n"
 				f"Authors: {self.authors}\n"
-				f"Publication Year: {self.date}\n"
 				f"PDF Link: {self.pdf_link}\n"
-				f"Abstract: {self.abstract}\n"
-				f"subjects: {', '.join(self.subjects)}"
+				f"Abstract:\n \t{self.abstract}\n"
+				# f"subjects: {', '.join(self.subjects)}"
+				f"\n"
+				f"\n"
+				f"--------------------------------------------------"
 				f"\n")
 		else: 
 			return (
+				f"\n"
+				f"\n"
+				f"--------------------------------------------------"
 				f"\n"
 				f"Title: {self.title}\n"
 				f"Authors: {self.authors}\n"
 				f"PDF Link: {self.pdf_link}\n"
 				f"subjects: {', '.join(self.subjects)}"
+				f"\n"
+				f"--------------------------------------------------"
+				f"\n"
 				f"\n")
 
 	def open_pdf(self): 
 		# TODO add safety checks here
 		webbrowser.open(self.pdf_link)
 
+def request_url(url): 
+	try:
+		response = requests.get(url, timeout=REQUEST_TIMEOUT)
+		response.raise_for_status()  # Raise an HTTPError for bad responses
+		return response.content
+	except requests.RequestException as e:
+		print(f"Request failed: {e}")
+		return ""
 
 def getInfo():
 	# TODO: add support for other links
-	url: str = "https://arxiv.org/list/cs.AI/recent"
-	response = requests.get(url)
-	html_content = response.content
+	url = "https://arxiv.org/list/cs.AI/recent"
+	html_content = request_url(url)
 
 	soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -58,21 +77,23 @@ def getInfo():
 
 	print(article_list)
 
-def extract_abstract(abstract_link)-> Union[str, None]: 
-	url: str = abstract_link
-	response = requests.get(url)
-	html_content = response.content
+def extract_abstract(abstract_link)-> str: 
+	html_content = request_url(abstract_link)
 	soup = BeautifulSoup(html_content, 'html.parser')
 
-	abstract_div = soup.find('blockquote', class_='abstract mathjax')
-	if abstract_div: 
-		abstract_text = abstract_div.get_text(strip=True)
-	else: 
-		return None
+	blockquote = soup.find('blockquote', class_='abstract mathjax')
+	if not blockquote:
+		return ""
+
+	abstract_span = blockquote.find('span', class_="descriptor")
+	if not abstract_span or not abstract_span.next_sibling:
+		return ""
+
+	abstract_text = abstract_span.next_sibling.strip(' "')
 
 	return abstract_text
 
-def parse_articles(dl_tag): 
+def parse_articles(dl_tag)-> List[Paper]: 
 	# links for each article inside the <dt> header
 	# the meta information like title and authors is inside the <dd> <div class="meta"> tag
 
@@ -87,9 +108,9 @@ def parse_articles(dl_tag):
 		pdf_link = dt.find('a', title="Download PDF")['href'] if dt.find('a', title='Download PDF') else ''
 		paper.pdf_link = BASE_URL + pdf_link 
 
-		# abstract_link = BASE_URL + dt.find('a', title='Abstract')['href']
-		# if abstract_link: 
-		# 	paper.abstract = extract_abstract(abstract_link)
+		abstract_link = BASE_URL + dt.find('a', title='Abstract')['href']
+		if abstract_link: 
+			paper.abstract = extract_abstract(abstract_link)
 
 		meta_div = dd.find('div', class_='meta')
 		if meta_div: 
@@ -104,8 +125,9 @@ def parse_articles(dl_tag):
 				paper.authors = authors
 
 			subject_span = meta_div.find('span', class_='primary_subject')
-			if subject_span and subject_span.next_sibling: 
-				paper.title = title_span.next_sibling.strip(' "')
+			if subject_span: 
+				clean_string = lambda input_string: input_string.lstrip().split("(cs.")[0]
+				paper.subjects.append(clean_string(subject_span.get_text))
 
 		article_list.append(paper)
 
