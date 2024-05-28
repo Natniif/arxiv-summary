@@ -1,6 +1,12 @@
 # arxiv-summary
 
-A terminal based script to summarise the papers that are published daily on the arXiv website in a specific topic
+Are you really lazy like me and hate leaving the terminal? Do you also like to keep up to date with the research in your field?
+
+If so then you may be interested in this repository.
+
+Arxiv-summary will download the metadata of the most recent articles of a specific field of reserach and display them in a condensed form right in your command line.
+
+The project is in very early days yet and I aim to add much more functionality. See TODO section for future aims of project :)
 
 ## Installation Instructions
 
@@ -11,20 +17,24 @@ A terminal based script to summarise the papers that are published daily on the 
 
 ### Installation Steps
 
-```
-git clone git@github.com:Natniif/arxiv-summary.git
-
-cd arxiv-summary
-
-pip install
-```
+`git clone git@github.com:Natniif/arxiv-summary.git && cd arxiv-summary && pip install`
 
 ## Usage
 
-`python3 gather_articles.py`
+```
+usage: gather_articles.py [-h] [--abstract ABSTRACT] [--num NUM]
+
+options:
+  -h, --help            show this help message and exit
+  --abstract ABSTRACT, -a ABSTRACT
+                        Display the abstract. Default = True
+  --num NUM, -n NUM     Choose how many papers to display
+```
+
+E.g.
+`python3 gather_articles.py --abstract=True --num=5`
 
 ## TODOs of project
 
--   Get Working (I am away this weekend so will only be able to code out bare bones in the few hours I have this morning)
--   Add in parsing info to script to omit certain details from summary
+-   Add support for other reserach pages on arxiv
 -   Add in an AI agent from huggingface that can summarise a paper
