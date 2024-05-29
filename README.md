@@ -43,6 +43,6 @@ E.g.
 
 ## TODOs of project
 
-[x] Add support for other topics
-[ ] Add testing suite to prevent future breakage if change in website html
-[ ] Add in an AI agent from huggingface that can summarise a paper
+-   [x] Add support for other topics
+-   [ ] Add testing suite to prevent future breakage if change in website html
+-   [ ] Add in an AI agent from huggingface that can summarise a paper
