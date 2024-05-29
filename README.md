@@ -8,6 +8,10 @@ Arxiv-summary will download the metadata of the most recent articles of a specif
 
 The project is in very early days yet and I aim to add much more functionality. See TODO section for future aims of project :)
 
+## Example
+
+![Example Photo](extra/example.png)
+
 ## Installation Instructions
 
 ### Prerequisites
