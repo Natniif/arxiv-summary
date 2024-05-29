@@ -43,7 +43,7 @@ E.g. `./dist/gather_articles --topic=artificial_intelligence --abstract=True --n
 
 Or, if you want to run as normal python file. Run `pip install .` and then:
 
-`./dist/gather_articles --topic=artificial_intelligence --abstract=True --num=5`
+`python3 gather_articles.py --topic=artificial_intelligence --abstract=True --num=5`
 
 ## TODOs of project
 
