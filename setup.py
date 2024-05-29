@@ -9,5 +9,6 @@ setup(
         'bs4',
         'requests',
         'pytest',
+        'pyinstaller',
     ],
 )

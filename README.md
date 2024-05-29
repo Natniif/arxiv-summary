@@ -24,13 +24,14 @@ The project is in very early days yet and I aim to add much more functionality. 
 ```
 git clone git@github.com:Natniif/arxiv-summary.git
 cd arxiv-summary
-pip install
 ```
 
 ## Usage
 
+I created this package as an executable so you dont have to donwload all the dependencies.
+
 ```
-usage: gather_articles.py [-h] --topic TOPIC [--abstract ABSTRACT] [--num NUM]
+usage: ./dist/gather_articles [-h] --topic TOPIC [--abstract ABSTRACT] [--num NUM]
 options:
   -h, --help                        show this help message and exit
   --topic TOPIC, -t TOPIC           Choose topic. use underscores instead of spaces
@@ -38,8 +39,11 @@ options:
   --num NUM, -n NUM                 Choose how many papers to display
 ```
 
-E.g.
-`python3 gather_articles.py --topic=artificial_intelligence --abstract=True --num=5`
+E.g. `./dist/gather_articles --topic=artificial_intelligence --abstract=True --num=5`
+
+Or, if you want to run as normal python file. Run `pip install .` and then:
+
+`./dist/gather_articles --topic=artificial_intelligence --abstract=True --num=5`
 
 ## TODOs of project
 
