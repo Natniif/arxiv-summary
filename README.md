@@ -17,22 +17,25 @@ The project is in very early days yet and I aim to add much more functionality. 
 
 ### Installation Steps
 
-`git clone git@github.com:Natniif/arxiv-summary.git && cd arxiv-summary && pip install`
+```
+git clone git@github.com:Natniif/arxiv-summary.git
+cd arxiv-summary
+pip install
+```
 
 ## Usage
 
 ```
-usage: gather_articles.py [-h] [--abstract ABSTRACT] [--num NUM]
-
+usage: gather_articles.py [-h] --topic TOPIC [--abstract ABSTRACT] [--num NUM]
 options:
-  -h, --help            show this help message and exit
-  --abstract ABSTRACT, -a ABSTRACT
-                        Display the abstract. Default = True
-  --num NUM, -n NUM     Choose how many papers to display
+  -h, --help                        show this help message and exit
+  --topic TOPIC, -t TOPIC           Choose topic. use underscores instead of spaces
+  --abstract ABSTRACT, -a ABSTRACT  Display the abstract. Default = True
+  --num NUM, -n NUM                 Choose how many papers to display
 ```
 
 E.g.
-`python3 gather_articles.py --abstract=True --num=5`
+`python3 gather_articles.py --topic=artificial_intelligence --abstract=True --num=5`
 
 ## TODOs of project
 

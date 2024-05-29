@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import requests
 import webbrowser
 import argparse
+from scripts.get_paths import *
 
 BASE_URL = "https://arxiv.org"
 REQUEST_TIMEOUT = 2
@@ -31,7 +32,7 @@ class Paper:
 	abstract: str = ""
 	id: int = 0
 
-	def __repr__(self):
+	def __repr__(self) -> str:
 		escape_mask = '\033]8;{};{}\033\\{}\033]8;;\033\\'
 		if len(self.abstract) != 0:
 			return (
@@ -45,7 +46,6 @@ class Paper:
 				f"{Color.PURPLE}{Color.UNDERLINE}{Color.BOLD}PDF Link:{Color.END} {self.pdf_link}\n"
 				f"{Color.GREEN}{Color.UNDERLINE}{Color.BOLD}Abstract:{Color.END}\n \t{self.abstract}\n"
 				f"------------------------[{self.id}]------------------------"
-				f"\n"
 				f"\n")
 		else: 
 			return (
@@ -58,14 +58,13 @@ class Paper:
 				f"{Color.YELLOW}{Color.UNDERLINE}{Color.BOLD}subjects:{Color.YELLOW}{Color.END} {', '.join(self.subjects)}\n"
 				f"{Color.PURPLE}{Color.UNDERLINE}{Color.BOLD}PDF Link{Color.PURPLE}:{Color.END} {self.pdf_link}\n"
 				f"------------------------[{self.id}]------------------------"
-				f"\n"
 				f"\n")
 
-	def open_pdf(self): 
+	def open_pdf(self) -> None: 
 		# TODO add safety checks here
 		webbrowser.open(self.pdf_link)
 
-def request_url(url): 
+def request_url(url: str) -> Union[str, bytes]: 
 	try:
 		response = requests.get(url, timeout=REQUEST_TIMEOUT)
 		response.raise_for_status()  # Raise an HTTPError for bad responses
@@ -74,9 +73,9 @@ def request_url(url):
 		print(f"Request failed: {e}")
 		return ""
 
-def getInfo(abstract=True, max_papers=25):
+def getInfo(topic_url: str, abstract: bool =True, max_papers: int =25, ) -> None:
 	# TODO: add support for other links
-	url = "https://arxiv.org/list/cs.AI/recent"
+	url = BASE_URL + topic_url
 	html_content = request_url(url)
 
 	soup = BeautifulSoup(html_content, 'html.parser')
@@ -88,9 +87,10 @@ def getInfo(abstract=True, max_papers=25):
 		else: 
 			print("Error: Could not find dl tag with articles.")
 
-	print(article_list)
+	for i in article_list: 
+		print(i)
 
-def extract_abstract(abstract_link)-> str: 
+def extract_abstract(abstract_link: str)-> str: 
 	html_content = request_url(abstract_link)
 	soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -106,11 +106,11 @@ def extract_abstract(abstract_link)-> str:
 
 	return abstract_text
 
-def parse_articles(dl_tag, abstract, max_papers)-> List[Paper]: 
+def parse_articles(dl_tag: BeautifulSoup, abstract: bool, max_papers: int)-> List[Paper]: 
 	# links for each article inside the <dt> header
 	# the meta information like title and authors is inside the <dd> <div class="meta"> tag
 
-	article_list = []
+	article_list: List[Paper] = []
 
 	dt_tags = dl_tag.find_all('dt')
 	dd_tags = dl_tag.find_all('dd')
@@ -157,11 +157,19 @@ def parse_articles(dl_tag, abstract, max_papers)-> List[Paper]:
 	return article_list
 
 if __name__ == "__main__": 
-	# TODO add parsing information to display certain parts and load articles in web page potentially
+	topics = create_topis_dict()
+
 	parser = argparse.ArgumentParser()
+	parser.add_argument("--topic", "-t", type=str, help="Choose topic. use hyphens instead of spaces", required=True)
 	parser.add_argument("--abstract", "-a", type=bool, help="Display the abstract. Default = True", default=True, required=False)
 	parser.add_argument("--num", "-n", type=int, help="Choose how many papers to display", default=25, required=False)
 
 	args = parser.parse_args()
-	getInfo(args.abstract, args.num)
-	pass
+
+	if args.topic in topics:
+		topic_url = topics[args.topic]
+		getInfo(topic_url, args.abstract, args.num)
+	else: 
+		print(f"-The topic: {args.topic} is not a valid topic.")
+		print("-You may have a typo or the topic does not contain a valid list of papers.")
+		print("-Head to https://arxiv.org to view the list of topics available on the arxiv website.")
